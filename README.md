@@ -49,8 +49,8 @@ If dependencies need to be installed manually, start from `requirements.txt`.
 
 ## Run The Experiments
 
-Run commands from the repository root. The scripts use seed `1129` and write to
-`results/`.
+Run commands from the repository root. The scripts use seed `1129`, overwrite
+their result files, and write to `results/`.
 
 The main parameter sweep uses `FIX_NUMBER = 150` and writes the metrics needed
 by the Best F1 table.
@@ -111,10 +111,9 @@ high-difference duplicate-key rows used to fill the final fixed-size sweep; the
 two- and three-step files use the selected unique-key rows.
 
 The evaluation scripts use seed `1129`. Shuffling still matters because the
-pipeline skips invalid rows, rows whose prover result is `both`, and rows that
-do not match the class-specific evaluation condition. The fixed data files make
-the pool reproducible, while the seed fixes the order in which valid rows are
-counted.
+pipeline skips rows whose prover result is `both` and rows that do not match
+the class-specific evaluation condition. The fixed data files make the pool
+reproducible, while the seed fixes the order in which valid rows are counted.
 
 For the parameter sweep, ARCT `original` deduplicates exact `Premise + Claim`
 pairs. ARCT one-step keeps the final top-up rows in

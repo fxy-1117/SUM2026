@@ -2,7 +2,6 @@
 
 import contextlib
 import io
-import os
 import time
 import warnings
 from dataclasses import dataclass
@@ -30,7 +29,6 @@ class ThresholdResult:
     skipped_both: int
     exceptions: int
     elapsed_sec: float
-    report: str
     metrics: Dict[str, Any]
 
     def as_row(self) -> Dict[str, Any]:
@@ -61,7 +59,6 @@ class EvaluationRunner:
         self.neural_caches: Dict[str, NeuralCache] = {}
         self.core.nli_tokenizer = None
         self.core.model_nli = None
-        self.row_compat = os.environ.get("ENTHYMEME_ROW_COMPAT", "0") == "1"
 
     def close(self) -> None:
         for neural_cache in self.neural_caches.values():
@@ -90,12 +87,8 @@ class EvaluationRunner:
     ) -> Tuple[str, List[int], List[int]]:
         """Evaluate one row with the final sweep skip rules."""
         self._use_neural_cache(setting.dataset)
-        if not getattr(row, "eval_valid", True):
-            return "invalid", [], []
-
         with self._quiet():
-            compat_key = str(row[0]) + str(row[1]) if self.row_compat else None
-            pre_data = logic_cache.get_row(row[:-1], compat_key=compat_key)
+            pre_data = logic_cache.get_row(row[:-1])
             temcheck = self.core.prove([pre_data[0], pre_data[1]], tau_m, tau_c)
         if temcheck and temcheck[0] == "ent":
             return "ent", [], []
@@ -151,9 +144,6 @@ class EvaluationRunner:
             for row in rows:
                 try:
                     status, predicted, gold = self.row_outcome(setting, row, tau_m, tau_c, logic_cache)
-                    if status == "invalid":
-                        skipped_invalid += 1
-                        continue
                     if status == "ent":
                         skipped_ent += 1
                         continue
@@ -182,7 +172,6 @@ class EvaluationRunner:
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            report = classification_report(gl_stsb, ll_stsb, zero_division=0)
             metrics = classification_report(gl_stsb, ll_stsb, zero_division=0, output_dict=True)
         accuracy = accuracy_score(gl_stsb, ll_stsb)
         return ThresholdResult(
@@ -198,7 +187,6 @@ class EvaluationRunner:
             skipped_both=skipped_both,
             exceptions=exceptions,
             elapsed_sec=round(time.time() - started, 3),
-            report=report,
             metrics=metrics,
         )
 

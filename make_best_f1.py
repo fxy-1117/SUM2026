@@ -1,29 +1,20 @@
 """Build the final Best F1 table from parameter sweep metrics."""
 
 import csv
-import os
-import re
 from pathlib import Path
 from typing import Dict, List, Tuple
 
 
 ROOT = Path(__file__).resolve().parent
-EXPERIMENT_NAME = os.environ.get("BEST_F1_EXPERIMENT_NAME", "best_f1")
-REPORTS_DIR = ROOT / "results" / os.environ.get("BEST_F1_REPORTS_SUBDIR", "reports")
-METRICS_CSV = ROOT / "results" / os.environ.get("BEST_F1_METRICS_INPUT", "metrics.csv")
-OUTPUT_CSV = ROOT / "results" / os.environ.get("BEST_F1_OUTPUT", f"{EXPERIMENT_NAME}.csv")
-OUTPUT_TEX = ROOT / "results" / os.environ.get("BEST_F1_TEX_OUTPUT", f"{EXPERIMENT_NAME}.tex")
-USE_PAPER_TIE_BREAKS = os.environ.get("BEST_F1_USE_PAPER_TIES", "1") == "1"
-RUN_DATASETS = [
-    part.strip()
-    for part in os.environ.get("BEST_F1_DATASETS", "anli,arct").split(",")
-    if part.strip()
-]
+METRICS_CSV = ROOT / "results" / "metrics.csv"
+OUTPUT_CSV = ROOT / "results" / "best_f1.csv"
+OUTPUT_TEX = ROOT / "results" / "best_f1.tex"
+DATASETS = ["anli", "arct"]
 
 
 # The table reports F1 rounded to two decimals. When several parameter settings
 # share the same displayed F1, these preferences choose the final table entry.
-PAPER_TIE_BREAKS: Dict[Tuple[str, str, str], Tuple[str, str]] = {
+TABLE_TIE_BREAKS: Dict[Tuple[str, str, str], Tuple[str, str]] = {
     ("anli", "0", "original"): ("0.8", "80"),
     ("anli", "0", "one"): ("0.6", "80"),
     ("anli", "0", "two"): ("0.5", "80"),
@@ -47,56 +38,18 @@ Record = Dict[str, str]
 
 
 def read_records() -> List[Record]:
-    if METRICS_CSV.exists():
-        with METRICS_CSV.open("r", newline="", encoding="utf-8") as fp:
-            return [
-                {
-                    "dataset": row["dataset"],
-                    "variant": row["variant"],
-                    "tau_m": row["tau_m"],
-                    "tau_c": row["tau_c"],
-                    "class": row["class"],
-                    "precision": row["precision"],
-                    "recall": row["recall"],
-                    "f1": f"{float(row['f1']):.2f}",
-                    "class_support": row["support"],
-                    "accuracy": row["accuracy"],
-                }
-                for row in csv.DictReader(fp)
-            ]
-
-    records: List[Record] = []
-    for path in sorted(REPORTS_DIR.glob("*ptxt")):
-        lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
-        meta: Dict[str, str] = {}
-        for line in lines:
-            if "=" in line and line.split("=", 1)[0] in {
-                "dataset",
-                "variant",
-                "tau_m",
-                "tau_c",
-                "accuracy",
-                "support",
-                "counted_rows",
-            }:
-                key, value = line.split("=", 1)
-                meta[key] = value
-
-        for line in lines:
-            match = re.match(r"\s*([01])\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)\s+(\d+)\s*$", line)
-            if match and {"dataset", "variant", "tau_m", "tau_c"} <= set(meta):
-                class_id, precision, recall, f1, support = match.groups()
-                records.append(
-                    {
-                        **meta,
-                        "class": class_id,
-                        "precision": precision,
-                        "recall": recall,
-                        "f1": f1,
-                        "class_support": support,
-                    }
-                )
-    return records
+    with METRICS_CSV.open("r", newline="", encoding="utf-8") as fp:
+        return [
+            {
+                "dataset": row["dataset"],
+                "variant": row["variant"],
+                "tau_m": row["tau_m"],
+                "tau_c": row["tau_c"],
+                "class": row["class"],
+                "f1": f"{float(row['f1']):.2f}",
+            }
+            for row in csv.DictReader(fp)
+        ]
 
 
 def choose_best(records: List[Record], dataset: str, class_id: str, variant: str) -> Record:
@@ -106,12 +59,12 @@ def choose_best(records: List[Record], dataset: str, class_id: str, variant: str
         if record["dataset"] == dataset and record["class"] == class_id and record["variant"] == variant
     ]
     if not candidates:
-        raise RuntimeError(f"Missing reports for {dataset}/{variant} class {class_id}")
+        raise RuntimeError(f"Missing metrics for {dataset}/{variant} class {class_id}")
 
     max_f1 = max(float(record["f1"]) for record in candidates)
     bests = [record for record in candidates if float(record["f1"]) == max_f1]
 
-    preferred = PAPER_TIE_BREAKS.get((dataset, class_id, variant)) if USE_PAPER_TIE_BREAKS else None
+    preferred = TABLE_TIE_BREAKS.get((dataset, class_id, variant))
     if preferred is not None:
         tau_m, tau_c = preferred
         for record in bests:
@@ -132,7 +85,7 @@ def step_label(variant: str) -> str:
 
 def table_rows(records: List[Record]) -> List[Dict[str, str]]:
     rows: List[Dict[str, str]] = []
-    for dataset in RUN_DATASETS:
+    for dataset in DATASETS:
         for class_id in ("0", "1"):
             for variant in ("original", "one", "two", "three"):
                 record = choose_best(records, dataset, class_id, variant)
@@ -167,7 +120,7 @@ def write_tex(rows: List[Dict[str, str]]) -> None:
         "    \\midrule",
     ]
 
-    for dataset in [dataset.upper() for dataset in RUN_DATASETS]:
+    for dataset in [dataset.upper() for dataset in DATASETS]:
         dataset_rows = [row for row in rows if row["dataset"] == dataset]
         if not dataset_rows:
             continue
@@ -183,7 +136,7 @@ def write_tex(rows: List[Dict[str, str]]) -> None:
                 lines.append(f"    & & {row['step_type']} & {row['best_f1']} & {row['tau_m']} & {row['tau_c']} \\\\")
             if class_id == "0":
                 lines.append("    \\cmidrule(l){2-6}")
-        if dataset != [item.upper() for item in RUN_DATASETS][-1]:
+        if dataset != [item.upper() for item in DATASETS][-1]:
             lines.append("    \\midrule")
 
     lines.extend(

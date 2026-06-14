@@ -7,7 +7,7 @@ import pickle
 import sqlite3
 import time
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Tuple
 
 from tqdm.auto import tqdm
 
@@ -21,12 +21,7 @@ def stable_hash(*parts: str) -> str:
 
 
 class LogicCache:
-    """Cache AMR-to-logic outputs by sentence.
-
-    The primary cache key is the exact sentence text.  ``compat_texts`` stores
-    row-level compatibility mappings for experiments that intentionally reuse
-    the first parsed logic for repeated premise/claim pairs.
-    """
+    """Cache AMR-to-logic outputs by exact sentence text."""
 
     def __init__(self, cache_dir: Path, setting_key: str, core: Any, parser: Any, converter: Any) -> None:
         self.cache_dir = cache_dir
@@ -41,7 +36,6 @@ class LogicCache:
         self.sentence_cache_dir.mkdir(parents=True, exist_ok=True)
         self.sentence_path = self.sentence_cache_dir / f"{self.dataset}.pkl"
         self.sentence_cache = self._load_pickle(self.sentence_path)
-        self.compat_texts: Dict[str, List[str]] = {}
 
     @staticmethod
     def _load_pickle(path: Path) -> Dict[str, Any]:
@@ -64,31 +58,22 @@ class LogicCache:
                     raise
                 time.sleep(0.25)
 
-    def get_row(self, texts: Iterable[str], compat_key: Optional[str] = None) -> List[Any]:
-        """Return row logic, keyed by sentence unless a compat key is provided."""
+    def get_row(self, texts: Iterable[str]) -> List[Any]:
+        """Return cached logic for each sentence in a row."""
+
         text_list = [str(text) for text in texts]
-        source_texts = (
-            self.compat_texts.setdefault(compat_key, text_list)
-            if compat_key is not None
-            else text_list
-        )
-        missing_texts = [text for text in source_texts if text not in self.sentence_cache]
+        missing_texts = [text for text in text_list if text not in self.sentence_cache]
         if missing_texts:
             self.warm_sentences(missing_texts, batch_size=len(missing_texts))
-        return [self.sentence_cache[text] for text in source_texts]
+        return [self.sentence_cache[text] for text in text_list]
 
-    def prepare_rows(self, rows: Iterable[Iterable[Any]], batch_size: int, row_compat: bool = False) -> None:
+    def prepare_rows(self, rows: Iterable[Iterable[Any]], batch_size: int) -> None:
         """Warm sentence cache for this setting."""
+
         all_texts: List[str] = []
         for row in rows:
-            if not getattr(row, "eval_valid", True):
-                continue
             row_list = list(row)
-            text_list = [str(text) for text in row_list[:-1]]
-            if row_compat:
-                compat_key = str(row_list[0]) + str(row_list[1])
-                self.compat_texts.setdefault(compat_key, text_list)
-            all_texts.extend(text_list)
+            all_texts.extend(str(text) for text in row_list[:-1])
         self.warm_sentences(all_texts, batch_size=batch_size)
 
     def warm_sentences(self, texts: Iterable[str], batch_size: int) -> int:
