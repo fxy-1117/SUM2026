@@ -1,4 +1,4 @@
-# ICTAI 2026 Enthymeme Evaluation
+# SMU Enthymeme Evaluation
 
 This repository contains the cleaned evaluation pipeline, fixed data, and final
 result files used for the enthymeme experiments.
