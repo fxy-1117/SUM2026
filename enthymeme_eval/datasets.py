@@ -22,9 +22,9 @@ DEDUP_PC_MODE = os.environ.get("ENTHYMEME_DEDUP_PC", "auto").lower()
 class EvalRow(list):
     """List row with evaluation-only metadata.
 
-    The legacy pipeline expects plain list indexing, so this keeps list
-    behavior while letting the runner skip invalid generated chains after the
-    1,000-row shuffle.
+    The runner uses plain list indexing, so this keeps list behavior while
+    letting the evaluator skip invalid generated chains after the 1,000-row
+    shuffle.
     """
 
     def __init__(self, values: List[object], eval_valid: bool = True, validation_error: str = "") -> None:
@@ -34,9 +34,9 @@ class EvalRow(list):
 
 
 # The ANLI generated one/two/three-step files were produced from the first
-# 1,000 ANLI test examples in the notebook. The paper's ANLI/original table
-# follows the same source subset, so the default loader applies that cap before
-# shuffling. Pass paper_subset=False to evaluate the full ANLI test split.
+# 1,000 ANLI test examples. The final ANLI/original table follows the same
+# source subset, so the default loader applies that cap before shuffling. Pass
+# paper_subset=False to evaluate the full ANLI test split.
 PAPER_SOURCE_LIMITS: Dict[Tuple[str, str], int] = {
     ("anli", "original"): 1000,
 }

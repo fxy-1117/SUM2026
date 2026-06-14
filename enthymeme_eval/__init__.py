@@ -1,2 +1,1 @@
-"""Evaluation helpers for the enthymeme notebook experiments."""
-
+"""Evaluation helpers for the enthymeme experiments."""

@@ -1,4 +1,4 @@
-"""Build the final Best F1 table from parameter sweep reports."""
+"""Build the final Best F1 table from parameter sweep metrics."""
 
 import csv
 import os
@@ -10,6 +10,7 @@ from typing import Dict, List, Tuple
 ROOT = Path(__file__).resolve().parent
 EXPERIMENT_NAME = os.environ.get("BEST_F1_EXPERIMENT_NAME", "best_f1")
 REPORTS_DIR = ROOT / "results" / os.environ.get("BEST_F1_REPORTS_SUBDIR", "reports")
+METRICS_CSV = ROOT / "results" / os.environ.get("BEST_F1_METRICS_INPUT", "metrics.csv")
 OUTPUT_CSV = ROOT / "results" / os.environ.get("BEST_F1_OUTPUT", f"{EXPERIMENT_NAME}.csv")
 OUTPUT_TEX = ROOT / "results" / os.environ.get("BEST_F1_TEX_OUTPUT", f"{EXPERIMENT_NAME}.tex")
 USE_PAPER_TIE_BREAKS = os.environ.get("BEST_F1_USE_PAPER_TIES", "1") == "1"
@@ -20,9 +21,8 @@ RUN_DATASETS = [
 ]
 
 
-# Reports only store F1 rounded to two decimals. When several parameter
-# settings share the same displayed F1, these preferences reproduce the paper
-# table's original choice.
+# The table reports F1 rounded to two decimals. When several parameter settings
+# share the same displayed F1, these preferences choose the final table entry.
 PAPER_TIE_BREAKS: Dict[Tuple[str, str, str], Tuple[str, str]] = {
     ("anli", "0", "original"): ("0.8", "80"),
     ("anli", "0", "one"): ("0.6", "80"),
@@ -47,6 +47,24 @@ Record = Dict[str, str]
 
 
 def read_records() -> List[Record]:
+    if METRICS_CSV.exists():
+        with METRICS_CSV.open("r", newline="", encoding="utf-8") as fp:
+            return [
+                {
+                    "dataset": row["dataset"],
+                    "variant": row["variant"],
+                    "tau_m": row["tau_m"],
+                    "tau_c": row["tau_c"],
+                    "class": row["class"],
+                    "precision": row["precision"],
+                    "recall": row["recall"],
+                    "f1": f"{float(row['f1']):.2f}",
+                    "class_support": row["support"],
+                    "accuracy": row["accuracy"],
+                }
+                for row in csv.DictReader(fp)
+            ]
+
     records: List[Record] = []
     for path in sorted(REPORTS_DIR.glob("*ptxt")):
         lines = path.read_text(encoding="utf-8", errors="replace").splitlines()

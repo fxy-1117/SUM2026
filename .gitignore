@@ -12,6 +12,7 @@ _archive_nonfinal/
 .deepseek_key
 
 # Runtime logs and verbose classification-report folders
+results/reports/
 results/*.log
 results/*.txt
 results/*stdout*.txt

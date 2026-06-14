@@ -1,7 +1,7 @@
 """Run the final parameter sweep reports.
 
 The Best F1 table is extracted from this same parameter sweep.  Defaults match
-the final old-aligned project setup: FIX_NUMBER=150, tau_m in {0.5, ..., 1.0},
+the final reproducibility setup: FIX_NUMBER=150, tau_m in {0.5, ..., 1.0},
 tau_c in {80, 90, 100}, generated data under ``data/*/generated``, and reports
 under ``results/reports``.
 
@@ -28,7 +28,7 @@ logging.getLogger().setLevel(logging.ERROR)
 for logger_name in ("transformers", "sentence_transformers", "transition_amr_parser"):
     logging.getLogger(logger_name).setLevel(logging.ERROR)
 
-from enthymeme_eval import legacy_core
+from enthymeme_eval import logic
 from enthymeme_eval.config import FIX_NUMBER, TAU_C_VALUES, TAU_M_VALUES, Setting
 from enthymeme_eval.datasets import load_rows
 from enthymeme_eval.models import ModelBundle
@@ -97,7 +97,7 @@ ResultKey = Tuple[str, str, str, str]
 
 @contextlib.contextmanager
 def quiet_output():
-    """Suppress legacy model chatter while keeping this script's tqdm bars."""
+    """Suppress model chatter while keeping this script's tqdm bars."""
     with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
         yield
 
@@ -197,7 +197,7 @@ def evaluate() -> None:
     # shared report directory but used a separate output CSV.
     done = existing_report_keys() & existing_csv_keys(OUTPUT_CSV)
     models = ModelBundle()
-    runner = EvaluationRunner(cache_dir=CACHE_DIR, models=models, core=legacy_core, fix_number=RUN_FIX_NUMBER)
+    runner = EvaluationRunner(cache_dir=CACHE_DIR, models=models, core=logic, fix_number=RUN_FIX_NUMBER)
     result_writer = ensure_writer(
         OUTPUT_CSV,
         [

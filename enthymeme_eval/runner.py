@@ -88,7 +88,7 @@ class EvaluationRunner:
         tau_c: int,
         logic_cache: LogicCache,
     ) -> Tuple[str, List[int], List[int]]:
-        """Evaluate one row with the same skip rules as the legacy sweep."""
+        """Evaluate one row with the final sweep skip rules."""
         self._use_neural_cache(setting.dataset)
         if not getattr(row, "eval_valid", True):
             return "invalid", [], []
@@ -135,7 +135,7 @@ class EvaluationRunner:
         tau_c: int,
         logic_cache: LogicCache,
     ) -> ThresholdResult:
-        """Run the legacy proof pipeline until FIX_NUMBER valid rows are counted."""
+        """Run the proof pipeline until FIX_NUMBER valid rows are counted."""
         self._use_neural_cache(setting.dataset)
         started = time.time()
         ll_stsb: List[int] = []

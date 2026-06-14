@@ -1,18 +1,10 @@
 """Evaluate the final entailment-only table.
 
-The old notebook fixed NumPy seed 1129, shuffled the full data frame, and then
-kept evaluating rows until valid entailment-side examples were collected.  The
-final setup uses FIX_NUMBER=250 and deduplicates all ARCT settings by exact
-Premise/Claim for this entailment-only table.  Logic and neural caches are
-shared with the parameter sweep through dataset-specific cache files.  For
-ARCT/original the default is the label-correct warrant.  Set
-``ENT_FIX400_ARCT_ORIGINAL_MODE=paper`` only when intentionally reproducing
-the old notebook's ``warrant0`` behavior.
-
-The notebook also cached full rows by ``premise + claim``.  If the same
-premise/claim pair appeared again with a different generated chain, the first
-chain's parsed logic was reused.  The sentence cache below is still
-fine-grained, but evaluation intentionally preserves that row-wise reuse.
+The final protocol uses seed 1129, shuffles each fixed data pool, and keeps
+evaluating rows until FIX_NUMBER=250 valid entailment-side examples are
+collected.  For this entailment-only table, ARCT settings are deduplicated by
+exact Premise/Claim pairs.  Logic and neural caches are shared with the
+parameter sweep through dataset-specific cache files.
 """
 
 from __future__ import annotations
@@ -42,7 +34,7 @@ logging.getLogger().setLevel(logging.ERROR)
 for logger_name in ("transformers", "sentence_transformers", "transition_amr_parser"):
     logging.getLogger(logger_name).setLevel(logging.ERROR)
 
-from enthymeme_eval import legacy_core
+from enthymeme_eval import logic as logic_core
 from enthymeme_eval.cache import LogicCache, NeuralCache
 from enthymeme_eval.config import SHUFFLE_SEED
 from enthymeme_eval.models import ModelBundle
@@ -190,8 +182,8 @@ def split_steps_safe(text: str, steps: int) -> List[str]:
     return output
 
 
-def legacy_shuffle(items: List[EntailmentItem]) -> List[EntailmentItem]:
-    """Match Enthymem-newtry*.ipynb: fixed seed, shuffle full rows, no de-dupe."""
+def seeded_shuffle(items: List[EntailmentItem]) -> List[EntailmentItem]:
+    """Shuffle full rows with the fixed project seed."""
 
     shuffled = list(items)
     np.random.seed(SHUFFLE_SEED)
@@ -220,7 +212,7 @@ def load_items(dataset: str, step_type: str) -> List[EntailmentItem]:
         items = load_generated_helpful_side(dataset, step_type)
     if should_dedup_premise_claim(dataset, step_type):
         items = dedup_premise_claim(items)
-    return legacy_shuffle(items)
+    return seeded_shuffle(items)
 
 
 def should_dedup_premise_claim(dataset: str, step_type: str) -> bool:
@@ -449,7 +441,7 @@ class LazyLogic:
             cache = LogicCache(
                 CACHE_DIR,
                 f"{dataset}_entailment_fix{FIX_NUMBER}",
-                legacy_core,
+                logic_core,
                 self.parser,
                 self.converter,
             )
@@ -460,8 +452,8 @@ class LazyLogic:
         if self.parser is not None and self.converter is not None:
             return
         self.parser, self.converter = self.models.load_amr()
-        legacy_core.parser = self.parser
-        legacy_core.converter = self.converter
+        logic_core.parser = self.parser
+        logic_core.converter = self.converter
 
     def _warm_missing(self, dataset: str, texts: List[str]) -> None:
         cache = self._cache_for_dataset(dataset)
@@ -505,7 +497,7 @@ def row_cache_key(item: EntailmentItem) -> str:
 def prove_texts(logic_cache: LazyLogic, dataset: str, texts: Iterable[str], tau_m: float, tau_c: int):
     logic = logic_cache.get(dataset, texts)
     with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
-        return legacy_core.prove(logic, tau_m, tau_c)
+        return logic_core.prove(logic, tau_m, tau_c)
 
 
 def evaluate_setting(
@@ -650,8 +642,8 @@ def main() -> None:
 
     models = ModelBundle()
     logic_cache = LazyLogic(models)
-    legacy_core.nli_tokenizer = None
-    legacy_core.model_nli = None
+    logic_core.nli_tokenizer = None
+    logic_core.model_nli = None
     neural_caches: Dict[str, NeuralCache] = {}
 
     def use_neural_cache(dataset: str) -> None:
@@ -659,8 +651,8 @@ def main() -> None:
         if neural_cache is None:
             neural_cache = NeuralCache(CACHE_DIR / "neural_cache" / f"{dataset}.sqlite", models)
             neural_caches[dataset] = neural_cache
-        legacy_core.score = neural_cache.score
-        legacy_core.NLI = neural_cache.nli
+        logic_core.score = neural_cache.score
+        logic_core.NLI = neural_cache.nli
 
     writer = write_header_if_needed(OUTPUT_CSV, fields)
     results: List[Fix400Result] = []

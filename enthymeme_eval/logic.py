@@ -1,8 +1,5 @@
-# This module contains the legacy symbolic/AMR logic extracted from Enthymem-newtry-two.ipynb.
-# Clean wrappers live in the neighboring modules; keep this file close to notebook behavior.
+"""Symbolic AMR-to-logic prover used by the evaluation pipeline."""
 
-
-# ===== notebook cell 0 =====
 import re
 from operator import itemgetter
 from amr_logic_converter import types
@@ -10,10 +7,7 @@ from sympy.logic.boolalg import to_cnf
 from sympy import Symbol
 from pysat.formula import CNF
 from pysat.solvers import Solver
-# import spacy
-# nlp = spacy.load("en_core_web_sm")
 
-# ===== notebook cell 3 =====
 from amr_logic_converter.types import *
 from typing import Optional, Dict
 def strip_suffix(symbol: str) -> str:
@@ -399,7 +393,6 @@ def remove_duplicate_predicates(clause: Clause) -> Clause:
 
 
 
-# ===== notebook cell 4 =====
 def generate_logic(data):
     tem  = []
     temm = []
@@ -420,7 +413,6 @@ def generate_logic(data):
         n+=1
     return tem,temm, r1,r2
 
-# ===== notebook cell 5 =====
 def combine(final,f = False):
     init = True
     for i in final:
@@ -444,7 +436,6 @@ def combine(final,f = False):
     return init
     
 
-# ===== notebook cell 6 =====
 import copy
 def transform(formula,X):
     final = copy.deepcopy(formula)
@@ -476,7 +467,6 @@ def transform(formula,X):
     return final
         
 
-# ===== notebook cell 7 =====
 def extract(formula,l= 0):
     and_list = []
     arg = []
@@ -513,9 +503,6 @@ def extract(formula,l= 0):
     return and_list,arg
     
 
-# ===== notebook cell 8 =====
-
-# ===== notebook cell 10 =====
 def pysat_formula(formula):
     tem_list = []
     for i in str(formula).split(" & "):
@@ -531,7 +518,6 @@ def pysat_formula(formula):
             tem_list.append(tem_tem)
     return tem_list
 
-# ===== notebook cell 13 =====
 no_ = []
 def prove(data, threshold,c_threshold):
     # Initialize lists and dictionaries
@@ -675,22 +661,6 @@ def prove(data, threshold,c_threshold):
     
     for i in comp_dict:
         comp_dict[i] = sorted(comp_dict[i], key=itemgetter(-2),reverse=True)
-#     for i in replace_xx:
-#         if ~replace_xx[i] in replace_xx.values():
-#                 all_match = [k for k,v in replace_xx.items() if v == ~replace_xx[i]]
-#                 check_max = True
-#                 for j in all_match:
-#                     if comp_dict[i][0][-2]<comp_dict[j][0][-2]:
-#                         check_max = False
-#                 if check_max:
-#                     new_replace_xx[i] = replace_xx[i]
-#                 else:
-#                     if len(comp_dict[i])>1:
-#                         new_replace_xx[i] = comp_dict[i][1][-1]
-#                     else:
-#                         new_replace_xx[i] = True
-#         else:
-#                 new_replace_xx[i] = replace_xx[i]
     formula_main = combine(transform(for_expr, replace_xx))
     
     # Define final formulas
@@ -716,23 +686,16 @@ def prove(data, threshold,c_threshold):
     if not check_ent and check_con1:
         return "ent", max_dict
     elif not check_con1 and check_ent:
-#         for i in replace_x:
-#             if "possible" in i:
-#                 return "neu", max_dict
-                
         return "con", max_dict
     elif not check_con1 and not check_ent:
         return "both", max_dict
     else:
         return "neu", max_dict
 
-# ===== notebook cell 16 =====
 def subsitute(x,y,replaceX,replaceXX,maxx,i,j,thre,ct,m = None,mm = False,neg =False):
     
     tems = score(x,y)
-#     if temsn>0.5:
     finals = tems
-#     finals = tems
     
     if finals >= thre:
         ans = NLI(x,y,nli_tokenizer,model_nli)
@@ -741,7 +704,6 @@ def subsitute(x,y,replaceX,replaceXX,maxx,i,j,thre,ct,m = None,mm = False,neg =F
                 if i not in m:
                     m[i] = [[y,j,x,finals,~replaceX[j]]]
                 else:
-#                   
                     m[i].append([y,j,x,finals,~replaceX[j]])
             
             if finals > maxx[i]:
@@ -749,17 +711,12 @@ def subsitute(x,y,replaceX,replaceXX,maxx,i,j,thre,ct,m = None,mm = False,neg =F
                 maxx[i] = finals
                 replaceXX[i] = ~replaceX[j]
                 return True
-#             elif ans[0] == "neutral" and ans[1]>=80:
-#                  if finals > maxx[i]:
-#                     maxx[i] = finals
                     
         else:
-#             if tems>=0.8:
             if mm:
                 if i not in m:
                     m[i] = [[y,j,x,finals,replaceX[j]]]
                 else:
-#                     if tems>
                     m[i].append([y,j,x,finals,replaceX[j]])
             if finals > maxx[i]:
                 maxx[i] = finals
@@ -773,7 +730,6 @@ def subsitute(x,y,replaceX,replaceXX,maxx,i,j,thre,ct,m = None,mm = False,neg =F
     return False
             
 
-# ===== notebook cell 17 =====
 def transform_logic(x):
     return (remove_duplicate_predicates(((merge_quant_predicates(
                                                        (merge_mod_predicates(

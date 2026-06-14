@@ -32,12 +32,10 @@ results/
   entailment.csv
   entailment.tex
   parameter_sweep_figure.tex
-  comparison_with_paper.md
-  reports/
 ```
 
-Local caches, notebooks, debugging scripts, and non-final result files are not
-required for reproducing the submitted tables and are excluded from the release.
+Local caches, debugging scripts, and non-final result files are not required
+for reproducing the submitted tables and are excluded from the release.
 
 ## Environment
 
@@ -54,8 +52,8 @@ If dependencies need to be installed manually, start from `requirements.txt`.
 Run commands from the repository root. The scripts use seed `1129` and write to
 `results/`.
 
-The main parameter sweep uses `FIX_NUMBER = 150` and writes the classification
-reports needed by the Best F1 table.
+The main parameter sweep uses `FIX_NUMBER = 150` and writes the metrics needed
+by the Best F1 table.
 
 ```powershell
 python evaluate.py
@@ -66,10 +64,9 @@ Outputs:
 ```text
 results/sweep.csv
 results/metrics.csv
-results/reports/
 ```
 
-Extract the Best F1 table from the sweep reports:
+Extract the Best F1 table from the sweep metrics:
 
 ```powershell
 python make_best_f1.py

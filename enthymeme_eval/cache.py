@@ -23,8 +23,9 @@ def stable_hash(*parts: str) -> str:
 class LogicCache:
     """Cache AMR-to-logic outputs by sentence.
 
-    The primary cache key is the exact sentence text.  ``compat_texts`` is only
-    used when explicitly reproducing the old notebook's row-wise behavior.
+    The primary cache key is the exact sentence text.  ``compat_texts`` stores
+    row-level compatibility mappings for experiments that intentionally reuse
+    the first parsed logic for repeated premise/claim pairs.
     """
 
     def __init__(self, cache_dir: Path, setting_key: str, core: Any, parser: Any, converter: Any) -> None:
