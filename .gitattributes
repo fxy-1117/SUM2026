@@ -1,0 +1,11 @@
+* text=auto eol=lf
+
+*.py text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.csv text eol=lf
+*.tsv text eol=lf
+*.jsonl text eol=lf
+*.lst text eol=lf
+*.tex text eol=lf
+*.ptxt text eol=lf

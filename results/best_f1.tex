@@ -1,0 +1,32 @@
+\begin{table}[t]
+  \centering
+  \begin{tabular}{lllllr}
+    \toprule
+    Dataset & Class & Step type & Best F1 & $\tau_m$ & $\tau_c$ \\
+    \midrule
+    \multirow{8}{*}{ANLI}
+    & \multirow{4}{*}{0} & original & 0.67 & 0.8 & 80 \\
+    & & 1-step & 0.72 & 0.6 & 80 \\
+    & & 2-step & 0.74 & 0.5 & 80 \\
+    & & 3-step & 0.75 & 0.6 & 80 \\
+    \cmidrule(l){2-6}
+    & \multirow{4}{*}{1} & original & 0.46 & 0.55 & 100 \\
+    & & 1-step & 0.57 & 0.55 & 100 \\
+    & & 2-step & 0.66 & 0.6 & 100 \\
+    & & 3-step & 0.67 & 0.55 & 90 \\
+    \midrule
+    \multirow{8}{*}{ARCT}
+    & \multirow{4}{*}{0} & original & 0.67 & 0.5 & 90 \\
+    & & 1-step & 0.72 & 0.7 & 90 \\
+    & & 2-step & 0.70 & 0.75 & 80 \\
+    & & 3-step & 0.72 & 0.7 & 90 \\
+    \cmidrule(l){2-6}
+    & \multirow{4}{*}{1} & original & 0.21 & 0.55 & 80 \\
+    & & 1-step & 0.45 & 0.65 & 90 \\
+    & & 2-step & 0.52 & 0.6 & 90 \\
+    & & 3-step & 0.58 & 0.6 & 90 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Best F1-Score by Dataset, Class (non-entailment is 0 and entailment is 1), and Step type.}
+  \label{tab:best_f1_scores}
+\end{table}

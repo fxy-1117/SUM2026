@@ -1,0 +1,28 @@
+__pycache__/
+*.py[cod]
+
+# Local/generated caches
+.cache_eval/
+_archive_nonfinal/
+*.pkl
+*.sqlite
+*.tmp
+*.log
+.env
+.deepseek_key
+
+# Runtime logs and verbose classification-report folders
+results/*.log
+results/*.txt
+results/*stdout*.txt
+results/*stderr*.txt
+results/*debug*.txt
+results/*tau05_1*
+results/*tau085*
+results/*tm055_tc80*
+results/*arct_unique*
+
+# Notebook checkpoints and editor files
+.ipynb_checkpoints/
+.vscode/
+.idea/

@@ -1,0 +1,7 @@
+file,rows,unique_pc,duplicate_rows
+data/anli/generated/one.csv,1000,1000,0
+data/anli/generated/two.csv,1000,1000,0
+data/anli/generated/three.csv,1000,1000,0
+data/arct/generated/one.csv,425,289,136
+data/arct/generated/two.csv,289,289,0
+data/arct/generated/three.csv,289,289,0

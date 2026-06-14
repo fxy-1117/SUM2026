@@ -1,0 +1,17 @@
+dataset,class,step_type,best_f1,tau_m,tau_c
+ANLI,0,original,0.67,0.8,80
+ANLI,0,1-step,0.72,0.6,80
+ANLI,0,2-step,0.74,0.5,80
+ANLI,0,3-step,0.75,0.6,80
+ANLI,1,original,0.46,0.55,100
+ANLI,1,1-step,0.57,0.55,100
+ANLI,1,2-step,0.66,0.6,100
+ANLI,1,3-step,0.67,0.55,90
+ARCT,0,original,0.67,0.5,90
+ARCT,0,1-step,0.72,0.7,90
+ARCT,0,2-step,0.70,0.75,80
+ARCT,0,3-step,0.72,0.7,90
+ARCT,1,original,0.21,0.55,80
+ARCT,1,1-step,0.45,0.65,90
+ARCT,1,2-step,0.52,0.6,90
+ARCT,1,3-step,0.58,0.6,90

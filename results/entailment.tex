@@ -1,0 +1,16 @@
+\begin{table}[t]
+\centering
+\begin{tabularx}{\linewidth}{>{\RaggedRight}p{0.25\linewidth}>{\RaggedRight}p{0.35\linewidth}>{\RaggedRight}p{0.35\linewidth}}
+\toprule
+\textbf{Step type} & \textbf{ANLI dataset} & \textbf{ARCT dataset} \\
+\midrule
+none & 0.496 & 0.276\\
+original & 0.520 & 0.292\\
+1-step & 0.624 & 0.480\\
+2-step & 0.660 & 0.496\\
+3-step & 0.716 & 0.560\\
+\bottomrule
+\end{tabularx}
+\caption{Accuracy for entailment with different options for dealing with implicit premises where none means no intermediate premises were used, original means using the helpful intermediate premise given in the dataset, and 1- (resp. 2- and 3-) step means using the response from prompting the LLM for one (resp. two and three) steps of intermediate premises.}
+\label{tab:ent}
+\end{table}

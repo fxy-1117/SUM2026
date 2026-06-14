@@ -1,0 +1,18 @@
+dataset=anli
+variant=three
+tau_m=0.75
+tau_c=100
+accuracy=0.546667
+support=300
+counted_rows=150
+
+skipped_invalid=0
+              precision    recall  f1-score   support
+
+           0       0.53      0.97      0.68       150
+           1       0.79      0.13      0.22       150
+
+    accuracy                           0.55       300
+   macro avg       0.66      0.55      0.45       300
+weighted avg       0.66      0.55      0.45       300
+

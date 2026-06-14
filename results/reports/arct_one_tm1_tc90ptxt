@@ -1,0 +1,18 @@
+dataset=arct
+variant=one
+tau_m=1
+tau_c=90
+accuracy=0.503333
+support=300
+counted_rows=150
+
+skipped_invalid=0
+              precision    recall  f1-score   support
+
+           0       0.50      1.00      0.67       150
+           1       1.00      0.01      0.01       150
+
+    accuracy                           0.50       300
+   macro avg       0.75      0.50      0.34       300
+weighted avg       0.75      0.50      0.34       300
+
